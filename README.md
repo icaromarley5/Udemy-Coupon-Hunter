@@ -5,9 +5,10 @@ Após a coleta, uma verificação simples é feita para checar a validade de cad
 Esta aplicação foi otimizada com o objetivo de ser plugada em bots ou servidores para automatizar o processo de coleta de cupons.
 
 ## Observações 
+- O Web Crawling é feito com o auxílio da biclioteca requests
+- O projeto original utiliza Selenium no Web Crawling pode ser encontrado em https://bitbucket.org/icaro_marley/udemy-coupon-hunter/src/master/
 - A execução requer pouca memória e termina em torno de 10s
 - Uma cache local (em um arquivo csv) é mantida para não mostrar cupons já encontrados
-- O Web Crawling é feito com o auxílio da biclioteca requests
 - Nem todos os cupons encontrados são válidos e uma checagem mais profunda não é possível ser executada pois a Udemy bloqueia as requisições
 - Para extender o projeto, novos sites podem ser adicionados no arquivo siteFunctions.py
 
