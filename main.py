@@ -1,6 +1,14 @@
 
+import logging
+
 import coupons 
+import udemy 
 
-coupons.printCoupons()
+urls = coupons.getCoupons()
+if urls:
+    udemy.buyCourses(urls)
+else:
+    logging.info('No new coupons were found')
 
-#rodar sempre que o computador for ligado
+#import pandas as pd 
+#udemy.buyCourses(pd.read_csv('cache.csv')['url'].values)
