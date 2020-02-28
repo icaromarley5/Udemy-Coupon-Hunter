@@ -1,6 +1,7 @@
 import unittest
 
 import coupons 
+import siteHandlers
 
 import pandas as pd
 
@@ -14,48 +15,48 @@ class TestCoupons(unittest.TestCase):
         discounts = {}
         try:
             discounts = coupons.getCoupons(save=False)
-        except coupons.FunctionException as e:
+        except siteHandlers.SiteHandlerException as e:
             self.fail(f"Function {e} at getCoupons failed to get discount data")
         if not (discounts and isinstance(discounts,list)):
             self.fail(f'getCoupons failed to create discount data')
         if not all(map(coupons.checkValidUrl,discounts)):
             self.fail(f'getCoupons returned invalid urls')
     
-class TestCouponCache(unittest.TestCase):
+class TestCouponDB(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        coupons.CouponCache.cache = pd.DataFrame([],
+        coupons.CouponDB.db = pd.DataFrame([],
             columns=['url','recent'])
 
     def tearDown(self):
-        coupons.CouponCache.cache = \
-            coupons.CouponCache.cache[
-                ~ coupons.CouponCache.cache['url'].isin(
+        coupons.CouponDB.db = \
+            coupons.CouponDB.db[
+                ~ coupons.CouponDB.db['url'].isin(
                     ['test', 'test2'])]
               
-    def test_CouponCacheAdd(self):
-        coupons.CouponCache.add('test')
-        row = coupons.CouponCache.cache[
-            coupons.CouponCache.cache['url'] == 'test'].iloc[0]
+    def test_CouponDBAdd(self):
+        coupons.CouponDB.add('test')
+        row = coupons.CouponDB.db[
+            coupons.CouponDB.db['url'] == 'test'].iloc[0]
         self.assertEqual(True, row['recent'])
         
-        coupons.CouponCache.cache.loc[
-            coupons.CouponCache.cache.shape[0]] = [
+        coupons.CouponDB.db.loc[
+            coupons.CouponDB.db.shape[0]] = [
                 'test2', False]
-        coupons.CouponCache.add('test2')
-        row = coupons.CouponCache.cache[
-            coupons.CouponCache.cache['url'] == 'test2'].iloc[0]
+        coupons.CouponDB.add('test2')
+        row = coupons.CouponDB.db[
+            coupons.CouponDB.db['url'] == 'test2'].iloc[0]
         self.assertEqual(False, row['recent'])
 
-    def test_CouponCacheFilter(self):
-        coupons.CouponCache.cache.loc[
-            coupons.CouponCache.cache.shape[0]] = ['test', False]
-        coupons.CouponCache.add('test2')
-        row = coupons.CouponCache.cache[
-            coupons.CouponCache.cache['url'] == 'test'].iloc[0]
+    def test_CouponDBFilter(self):
+        coupons.CouponDB.db.loc[
+            coupons.CouponDB.db.shape[0]] = ['test', False]
+        coupons.CouponDB.add('test2')
+        row = coupons.CouponDB.db[
+            coupons.CouponDB.db['url'] == 'test'].iloc[0]
         self.assertEqual(False, row['recent'])
-        couponData = coupons.CouponCache.filterOldCoupons()
+        couponData = coupons.CouponDB.filterOldCoupons()
         self.assertTrue(
             couponData[couponData['url'] == 'test'].empty)
         self.assertFalse(
@@ -63,10 +64,10 @@ class TestCouponCache(unittest.TestCase):
                 couponData['url'] == 'test2'].empty)
 
     def test_GetCoupons(self):
-        couponsList = coupons.CouponCache.getCoupons()
+        couponsList = coupons.CouponDB.getCoupons()
         self.assertTrue('test' not in couponsList)
-        coupons.CouponCache.add('test')
-        couponsList = coupons.CouponCache.getCoupons()
+        coupons.CouponDB.add('test')
+        couponsList = coupons.CouponDB.getCoupons()
         self.assertTrue(isinstance(couponsList, list))
         self.assertTrue('test' in couponsList)
         

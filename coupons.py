@@ -6,63 +6,64 @@ import pandas as pd
 import threading 
 
 import types
-import siteFunctions 
+import siteHandlers 
 
-cachePath = 'cache.csv'
+dbPath = 'DB.csv'
 
-class CouponCache():
-    cache = pd.read_csv(cachePath)
+class CouponDB():
+    db = pd.read_csv(dbPath)
     
     @classmethod
     def add(cls, url):
-        if not (url in cls.cache['url'].values):
-            cls.cache.loc[cls.cache.shape[0]] = [url, True]
+        if not (url in cls.db['url'].values):
+            cls.db.loc[cls.db.shape[0]] = [url, True]
 
     @classmethod
     def filterOldCoupons(cls):
-        return cls.cache[cls.cache['recent'] == True]
+        return cls.db[cls.db['recent'] == True]
 
     @classmethod
     def save(cls): 
-        cls.cache['recent'] = False
-        cls.cache.to_csv(cachePath, index=False)
+        cls.db['recent'] = False
+        cls.db.to_csv(dbPath, index=False)
 
     @classmethod
     def getCoupons(cls): 
         return list(cls.filterOldCoupons()['url'].values)
            
-class FunctionException(Exception):
-    pass
-
 def getCoupons(save=True):
-    siteFunctionList = [
-        getattr(siteFunctions, a) for a in dir(siteFunctions)
-            if isinstance(getattr(
-                siteFunctions, a),
-                types.FunctionType) and not a.startswith('_')]
-
+    siteHandlerList = []
+    for a in dir(siteHandlers):
+        attr =  getattr(siteHandlers, a)
+        if isinstance(attr, type)\
+            and attr not in [siteHandlers.SiteHandler,
+                             siteHandlers.PageSiteHandler,
+                             siteHandlers.MultiPageSiteHandler]\
+            and (issubclass(attr, 
+                    siteHandlers.PageSiteHandler)\
+                or issubclass(attr, 
+                    siteHandlers.MultiPageSiteHandler)):
+            siteHandlerList.append(attr)  
     resultDict = {}
     threadList = [] 
-    for f in siteFunctionList:
-        thread = threading.Thread(target=f,
-                                  args=[
-                                      resultDict, 
-                                      FunctionException],
-                                  daemon=True)
+    for HandlerClass in siteHandlerList:
+        thread = threading.Thread(
+            target=lambda: HandlerClass().returnUrls(resultDict),
+            daemon=True)
         thread.start()
         threadList.append(thread)
     [thread.join() for thread in threadList]
 
     for _, result in resultDict.items():
-        if isinstance(result, FunctionException):
+        if isinstance(result, siteHandlers.SiteHandlerException):
             raise result
             return {}
 
     for _, result in resultDict.items():
-        urlList = [CouponCache.add(url) for url in result if checkValidUrl(url)]
-    coupons = CouponCache.getCoupons()
+        urlList = [CouponDB.add(url) for url in result if checkValidUrl(url)]
+    coupons = CouponDB.getCoupons()
     if save:
-        CouponCache.save()
+        CouponDB.save()
     return coupons
 
 def checkValidUrl(url):
