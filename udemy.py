@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.options import Options
 
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 
 import logging 
@@ -35,33 +36,42 @@ class UdemyRobotException(Exception):
     pass 
 
 def checkUdemy(browser):
-    if 'Please verify you are a human' in browser.page_source:
+    try:
+        WebDriverWait(browser, waitTime * 5).until(lambda browser:
+                'Please verify you are a human' in browser.page_source)
         logging.critical('''
             Selenium was blocked by Udemy.
             Please pass the human test.
             Press ENTER to continue''')
         input()
         try:
-            WebDriverWait(browser, waitTime * 5).until(lambda:
+            WebDriverWait(browser, waitTime * 5).until(lambda browser:
                 'Please verify you are a human' not in browser.page_source)
             return True
         except Exception as e:
             logging.execption(e)
             raise UdemyRobotException("You didn't pass the robot check")
+    except:
+        return True
    
 def login(browser, email, password):
     try:
         browser.get('https://www.udemy.com/join/login-popup/?locale=pt_BR&response_type=html&next=https%3A%2F%2Fwww.udemy.com%2F')
-        browser.implicitly_wait(waitTime * 2)
+        browser.implicitly_wait(waitTime)
         checkUdemy(browser)
         browser.find_element_by_id('email--1').send_keys(email)
         browser.find_element_by_id('id_password').send_keys(password)
-        browser.find_element_by_id('submit-id-submit').click()
-        browser.implicitly_wait(waitTime * 2)
+        browser.find_element_by_id('id_password').send_keys(Keys.RETURN)
         checkUdemy(browser)
+        WebDriverWait(browser, waitTime * 5).until(
+            lambda browser: 
+                'Welcome back,' in browser.page_source\
+                    and 'My courses' in browser.page_source)
         return True
     except Exception as e:
         if isinstance(e, UdemyRobotException): raise e
+        raise e
+        logging.critical('Login attempt failed')
         return False
 
 def buyCourse(browser, url):
@@ -71,23 +81,27 @@ def buyCourse(browser, url):
             EC.presence_of_element_located((
                 By.XPATH, 
                 '//div[@class="slider-menu"]//button[. = "Enroll now"]'))).click()
+        success = True
     except Exception as e:
         try:
             WebDriverWait(browser, waitTime * 10).until(
                 EC.presence_of_element_located((
                     By.CLASS_NAME, 
                     'course-cta'))).click()
+            success = True
         except Exception as e:
             logging.critical("Course wasn't bought")
             import pdb;pdb.set_trace()
-    browser.implicitly_wait(waitTime * 3)
+            raise e
+    browser.implicitly_wait(waitTime)
+    
     return success
 
 def checkCourse(browser, url):
     free = False 
     try:
         browser.get(url)
-        browser.implicitly_wait(waitTime * 2)
+        browser.implicitly_wait(waitTime)
         checkUdemy(browser)   
         currentUrl = browser.current_url
         if 'https://www.udemy.com/course/' in currentUrl\
@@ -97,33 +111,30 @@ def checkCourse(browser, url):
                     By.XPATH, 
                     '//div[@class="buy-box"]//span[contains(text(),"100% off")]')))
             free = True 
-        if "100% off" in browser.page_source and not free:
-            print('100 off',url, 'https://www.udemy.com/course/' in currentUrl and 'couponCode=' in currentUrl)
-            print(currentUrl)
-            import pdb;pdb.set_trace()
     except Exception as e:
         if isinstance(e, UdemyRobotException): raise e
         if '100% off' in browser.page_source:
-            logging.critical('100% off in html but the check failed')
+            logging.critical('100% off in source but the check failed')
+            logging.exception(e)
             import pdb;pdb.set_trace()
-    browser.implicitly_wait(waitTime * 3)
+    browser.implicitly_wait(waitTime)
     return free
 
-def checkCourses(urlList, userData=None):
+def buyCourses(urlList, userData):
     coursesBought = []
     
     browser = openBrowser()
-    loginResult = False
     
     try:
-        if userData:
-            loginResult = login(
-                browser, 
-                userData['email'], 
-                userData['password'])
+        if not login(
+            browser, 
+            userData['email'], 
+            userData['password']):
+            return 'Login Fail'
         for url in urlList: 
             checkResult = checkCourse(browser, url) 
-            if loginResult and checkResult and buyCourse(browser, url):
+            if checkResult:
+                buyCourse(browser, url)
                 coursesBought.append(url)           
     except Exception as e:
         logging.warning('An exception halted the execution')

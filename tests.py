@@ -11,16 +11,16 @@ import udemy
 imagePath = 'udemyImgs/'
 
 class TestCoupons(unittest.TestCase):
-    def test_getCoupons(self):
+    def test_SearchNewCoupons(self):
         discounts = {}
         try:
-            discounts = coupons.getCoupons(save=False)
+            discounts = coupons.searchNewCoupons()
         except siteHandlers.SiteHandlerException as e:
-            self.fail(f"Function {e} at getCoupons failed to get discount data")
+            self.fail(f"Function {e} at search failed to get discount data")
         if not (discounts and isinstance(discounts,list)):
-            self.fail(f'getCoupons failed to create discount data')
-        if not all(map(coupons.checkValidUrl,discounts)):
-            self.fail(f'getCoupons returned invalid urls')
+            self.fail(f'search failed to create discount data')
+        if not all(map(coupons._checkValidUrl,discounts)):
+            self.fail(f'search returned invalid urls')
     
 class TestCouponDB(unittest.TestCase):
     @classmethod
@@ -39,7 +39,7 @@ class TestCouponDB(unittest.TestCase):
         coupons.CouponDB.add('test')
         row = coupons.CouponDB.db[
             coupons.CouponDB.db['url'] == 'test'].iloc[0]
-        self.assertEqual(True, row['recent'])
+        self.assertTrue(row['recent'])
         
         coupons.CouponDB.db.loc[
             coupons.CouponDB.db.shape[0]] = [
@@ -47,7 +47,7 @@ class TestCouponDB(unittest.TestCase):
         coupons.CouponDB.add('test2')
         row = coupons.CouponDB.db[
             coupons.CouponDB.db['url'] == 'test2'].iloc[0]
-        self.assertEqual(False, row['recent'])
+        self.assertFalse(row['recent'])
 
     def test_CouponDBFilter(self):
         coupons.CouponDB.db.loc[
@@ -55,21 +55,18 @@ class TestCouponDB(unittest.TestCase):
         coupons.CouponDB.add('test2')
         row = coupons.CouponDB.db[
             coupons.CouponDB.db['url'] == 'test'].iloc[0]
-        self.assertEqual(False, row['recent'])
-        couponData = coupons.CouponDB.filterOldCoupons()
-        self.assertTrue(
-            couponData[couponData['url'] == 'test'].empty)
-        self.assertFalse(
-            couponData[
-                couponData['url'] == 'test2'].empty)
-
-    def test_GetCoupons(self):
-        couponsList = coupons.CouponDB.getCoupons()
-        self.assertTrue('test' not in couponsList)
-        coupons.CouponDB.add('test')
-        couponsList = coupons.CouponDB.getCoupons()
-        self.assertTrue(isinstance(couponsList, list))
-        self.assertTrue('test' in couponsList)
+        self.assertFalse(row['recent'])
+        couponData = coupons.CouponDB.filterNewCoupons()
+        self.assertFalse('test' in couponData)
+        self.assertTrue('test2' in couponData)
         
+    def test_CouponDBReset(self):
+        coupons.CouponDB.add('test')
+        row = coupons.CouponDB.db[
+            coupons.CouponDB.db['url'] == 'test'].iloc[0]
+        self.assertFalse(row.empty)
+        coupons.CouponDB.reset()
+        self.assertTrue(coupons.CouponDB.db.empty)
+                                
 if __name__ == '__main__':
     unittest.main()

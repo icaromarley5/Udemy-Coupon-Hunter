@@ -19,19 +19,22 @@ class CouponDB():
             cls.db.loc[cls.db.shape[0]] = [url, True]
 
     @classmethod
-    def filterOldCoupons(cls):
-        return cls.db[cls.db['recent'] == True]
+    def filterNewCoupons(cls):
+        return list(cls.db.loc[cls.db['recent'] == True,'url'].values)
 
     @classmethod
     def save(cls): 
         cls.db['recent'] = False
         cls.db.to_csv(dbPath, index=False)
-
+        
     @classmethod
-    def getCoupons(cls): 
-        return list(cls.filterOldCoupons()['url'].values)
-           
-def getCoupons(save=True):
+    def reset(cls): 
+        cls.db = pd.DataFrame([],columns=['url','recent'])
+
+def _checkValidUrl(url):
+    return not('https://www.udemy.com/course/' in url and '?couponCode=' not in url)
+
+def searchNewCoupons():
     siteHandlerList = []
     for a in dir(siteHandlers):
         attr =  getattr(siteHandlers, a)
@@ -59,12 +62,7 @@ def getCoupons(save=True):
             raise result
             return {}
 
+    coupons = []
     for _, result in resultDict.items():
-        urlList = [CouponDB.add(url) for url in result if checkValidUrl(url)]
-    coupons = CouponDB.getCoupons()
-    if save:
-        CouponDB.save()
+        coupons += [url for url in result if _checkValidUrl(url)]
     return coupons
-
-def checkValidUrl(url):
-    return not('https://www.udemy.com/course/' in url and '?couponCode=' not in url)
