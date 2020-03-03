@@ -1,20 +1,28 @@
 # Udemy-Coupon-Hunter
-Versão enxuta de uma aplicação que coleta cupons de 100% de desconto da plataforma Udemy (https://www.udemy.com/).
-Após a coleta, uma verificação simples é feita para checar a validade de cada cupom.
+Projeto completo para a apresentação do Décimo encontro do Python Python User Group Sergipe (PUG-SE).
 
-Esta aplicação foi otimizada com o objetivo de ser plugada em bots ou servidores para automatizar o processo de coleta de cupons.
+O script coleta cupons de 100% de desconto da plataforma Udemy (https://www.udemy.com/), checa a validade dos mesmos e executa a compra automática, dado um login e senha de usuário.
 
-## Observações 
-- O Web Scraping é feito com o auxílio da biclioteca requests
-- O projeto original utiliza Selenium no Web Scraping pode ser encontrado em https://bitbucket.org/icaro_marley/udemy-coupon-hunter/src/master/
-- A execução requer pouca memória e termina em torno de 10s
-- Uma cache local (em um arquivo csv) é mantida para não mostrar cupons já encontrados
-- Nem todos os cupons encontrados são válidos e uma checagem mais profunda não é possível ser executada pois a Udemy bloqueia as requisições
+## Tecnologias utilizadas  
+- O Web Scraping é feito com o auxílio da biblioteca requests
+
+## Observações
+- A compra dos cursos é feita com a biblioteca Selenium
+- Um navegador será aberto durante a execução. Por favor, não o feche. Isso é normal e o mesmo fechará automaticamente.
+- Uma base de dados local (em um arquivo csv) é mantida para não mostrar cupons já encontrados
 - Para extender o projeto, novos sites podem ser adicionados no arquivo siteFunctions.py
 
+## Requisitos
+- Sistema Operacional Windows
+- Chrome instalado no computador
+- Acesso à Internet
+
 ## Como usar
-Execute o comando "python main.py" e aguarde os resultados.
-A saída do programa é uma lista de nomes de cursos e suas respectivas urls 
+- Altere o idioma do seu perfil da Udemy em "perfil" para "English" (inglês).
+- Execute o comando "python main.py seuLoginUdemy suaSenhaUdemy reset" e aguarde os resultados. 
+- O argumento "reset" indica o reset da base de dados de cupons. Ele pode ser omitido para evitar a deleção dos cupons.
+- A execução pode demorar
+- É preciso acompanhamento humano de tempos em tempos. A Udemy pode bloquear o acesso do navegador e é preciso passar na verificação e pressionar ENTER no CMD para continuar a execução.
 
 ## Testes
 Execute o comando "python tests.py"
