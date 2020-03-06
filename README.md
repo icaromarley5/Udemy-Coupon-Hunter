@@ -12,12 +12,17 @@ Projeto original em https://bitbucket.org/icaro_marley/udemy-coupon-hunter/
 ## Observações
 - Um navegador será aberto durante a execução. Por favor, não o feche. Isso é normal e o mesmo fechará automaticamente.
 - Uma base de dados local (em um arquivo csv) é mantida para não mostrar cupons já encontrados
-- Para extender o projeto, novos sites podem ser adicionados no arquivo siteFunctions.py
+- Para extender o projeto, novos sites podem ser adicionados no arquivo siteHandlers.py
 
 ## Requisitos
 - Sistema Operacional Windows
 - Chrome instalado no computador
 - Acesso à Internet
+- selenium
+- pandas
+- datetime
+- requests
+- pywin32
 
 ## Como usar
 - Altere o idioma do seu perfil da Udemy em "perfil" para "English" (inglês).
