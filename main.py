@@ -2,10 +2,10 @@
 import logging
 import time
 
+import sys
+
 import coupons 
 import udemy 
-
-import sys
 
 #'''
 logging.root.setLevel('INFO')
@@ -24,6 +24,7 @@ oldTime = time.time()
 logging.info('Collecting coupons...')
 
 urls = coupons.searchNewCoupons()
+
 [coupons.CouponDB.add(url) for url in urls]
 newCoupons = coupons.CouponDB.filterNewCoupons() 
 
@@ -47,13 +48,3 @@ else:
 
 executionTime = (time.time() - oldTime)/60
 logging.info(f'Completed. Execution time: {executionTime:.1f} min')
-#'''
-'''
-import pandas as pd 
-
-urls = pd.read_csv('DB.csv')['url'].values
-userData = {
-            'email': sys.argv[1],
-            'password': sys.argv[2],}
-couponsBought = udemy.buyCourses(urls, userData) 
-'''

@@ -20,7 +20,9 @@ class CouponDB():
 
     @classmethod
     def filterNewCoupons(cls):
-        return list(cls.db.loc[cls.db['recent'] == True,'url'].values)
+        return list(cls.db.loc[
+            cls.db['recent'] == True,
+            'url'].values)
 
     @classmethod
     def save(cls): 
@@ -32,7 +34,7 @@ class CouponDB():
         cls.db = pd.DataFrame([],columns=['url','recent'])
 
 def _checkValidUrl(url):
-    return not('https://www.udemy.com/course/' in url and '?couponCode=' not in url)
+    return not('https://www.udemy.com/' in url and 'couponCode=' not in url)
 
 def searchNewCoupons():
     siteHandlerList = []
@@ -65,4 +67,5 @@ def searchNewCoupons():
     coupons = []
     for _, result in resultDict.items():
         coupons += [url for url in result if _checkValidUrl(url)]
+    coupons = list(set(coupons))
     return coupons

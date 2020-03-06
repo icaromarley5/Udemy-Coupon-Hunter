@@ -6,6 +6,8 @@ import requests
 from bs4 import BeautifulSoup
 from abc import ABC, abstractmethod 
 
+import datetime as dt 
+
 class SiteHandlerException(Exception):
     pass
 
@@ -68,6 +70,7 @@ class MultiPageSiteHandler(SiteHandler):
             pass
 
 # single page classes 
+'''
 class KeeperCouponHandler(PageSiteHandler):
     def __init__(self):
         functionName = 'KeeperCouponHandler'
@@ -80,7 +83,8 @@ class KeeperCouponHandler(PageSiteHandler):
                 {'class': 'coupon-code-link button promotion'})]
         
         super().__init__(functionName, siteUrl, handler) 
-
+'''
+'''
 class DiscountsGlobalHandler(PageSiteHandler):
     def __init__(self):
         functionName = 'DiscountsGlobalHandler'
@@ -108,7 +112,7 @@ class Guru99Handler(PageSiteHandler):
             return urls
         
         super().__init__(functionName, siteUrl, handler)   
-
+'''
 class LearnviralHandler(PageSiteHandler):
     def __init__(self):
         functionName = 'LearnviralHandler'
@@ -116,12 +120,27 @@ class LearnviralHandler(PageSiteHandler):
             'free100-discount/'
         def handler(soup):
             return [
-                a.get('href') for a in \
+                a.get('href').strip() for a in \
                 soup.findAll('a', {
                     'class': 'coupon-code-link btn promotion'})]
         
         super().__init__(functionName, siteUrl, handler)        
 
+class PromoCoupons24Handler(PageSiteHandler):
+    def __init__(self):
+        functionName = 'PromoCoupons24Handler'
+        today = dt.datetime.now()
+        year = today.year
+        month = today.month
+        siteUrl = f'https://www.promocoupons24.com/{year}/{month:02d}/'
+        
+        def handler(soup):
+            urlList = [a.get('href').strip() for a in soup.findAll('a') if a.get('href')]
+            return [url for url in urlList \
+                if 'https://www.udemy.com/' in url\
+                    and 'couponCode=' in url]
+        super().__init__(functionName, siteUrl, handler) 
+    
 # multiple page classes 
 class SmartybroHandler(MultiPageSiteHandler):
     def __init__(self):
@@ -129,7 +148,7 @@ class SmartybroHandler(MultiPageSiteHandler):
         siteUrl = 'https://smartybro.com/category/udemy-coupon-100-off/'
         def mainHandlerFunc(soup):
             return [
-                h2.find('a').get('href') for h2 in\
+                h2.find('a').get('href').strip() for h2 in\
                 soup.findAll('h2',{'class':'grid-tit'})]
         def couponHandlerFunc(soup):
             return soup.find(
@@ -146,7 +165,7 @@ class OnlineTutorialsHandler(MultiPageSiteHandler):
         siteUrl = 'https://onlinetutorials.org'
         def mainHandlerFunc(soup):
             return [
-                h2.find('a').get('href') for h2 in\
+                h2.find('a').get('href').strip() for h2 in\
                 soup.findAll('h2') if h2.find('a')]
         def couponHandlerFunc(soup):
             return soup.find(
@@ -163,7 +182,7 @@ class BlazeCouponHandler(MultiPageSiteHandler):
         siteUrl = 'https://blazecoupon.com/'
         def mainHandlerFunc(soup):
             return [
-                a.get('href') for a in\
+                a.get('href').strip() for a in\
                 soup.findAll('a',
                              {'class':'btn_offer_block re_track_btn'})]
         def couponHandlerFunc(soup):
@@ -181,7 +200,7 @@ class UdemyfreebiesHandler(MultiPageSiteHandler):
         siteUrl = 'https://www.udemyfreebies.com/'
         def mainHandlerFunc(soup):
             return [
-                a.get('href') for a in\
+                a.get('href').strip() for a in\
                 soup.findAll('a',{'class':'button-icon'})]
         def couponHandlerFunc(soup):
             return soup.find(
