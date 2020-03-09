@@ -68,12 +68,11 @@ def login(browser, email, password):
         checkUdemy(browser)
         WebDriverWait(browser, 5).until(
             lambda browser: 
-                'Welcome back,' in browser.page_source\
-                    and 'My courses' in browser.page_source)
+                'My courses' in browser.page_source)
         return True
     except Exception as e:
         if isinstance(e, UdemyRobotException): raise e
-        raise e
+        #raise e
         logging.critical('Login attempt failed')
         return False
 
@@ -134,6 +133,7 @@ def buyCourses(urlList, userData):
                 # logging.info(url)
                 coursesBought.append(url)           
     except Exception as e:
+        raise e
         logging.warning('An exception halted the execution')
         logging.warning(e)
         return 'Fail'
