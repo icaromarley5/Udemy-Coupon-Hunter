@@ -23,6 +23,7 @@ Projeto original em https://bitbucket.org/icaro_marley/udemy-coupon-hunter/
 - datetime
 - requests
 - pywin32
+- beautifulSoup
 
 ## Como usar
 - Altere o idioma do seu perfil da Udemy em "perfil" para "English" (inglês).
