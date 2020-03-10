@@ -78,18 +78,30 @@ def login(browser, email, password):
 
 
 def buyCourse(browser):
-    try:
-        buyButton = WebDriverWait(browser, 20).until(
+    buyButton = WebDriverWait(browser, 20).until(
         EC.element_to_be_clickable((
             By.XPATH, 
-            '//button[@class="course-cta btn btn-lg btn-quaternary btn-block"]'\
-                '|(//div[@class="buy-box"]//button[. = "Enroll now"])[2]')))
-        buyButton.click()
-    except Exception as e:
+            '//button[@class="course-cta btn btn-lg btn-quaternary btn-block" and not(@disabled)]'\
+                '|(//div[@class="buy-box"]//button[. = "Enroll now" and not(@disabled)])[2]')))
+    buyButton.click()
+    print('botao clicado')
+    try:
+        WebDriverWait(browser, 20).until(
+        lambda browser: 'udemy.com/cart/success/' in browser.current_url)
+    except:
+        print('sem success')
         userWarnings.alertUser(
             "Course wasn't bought", 
             'Please check the CMD')
-        pdb.set_trace()
+        enrollButton = WebDriverWait(browser, 20).until(
+            EC.element_to_be_clickable((
+                By.XPATH, 
+                '(//button[.="Enroll now" and not(@disabled)])[2]')))
+        enrollButton.click() 
+        print('enroll clicado')
+        WebDriverWait(browser, 20).until(
+            lambda browser: 'udemy.com/cart/success/' in browser.current_url)
+
     browser.implicitly_wait(5)
 
 def checkCourse(browser, url):
@@ -112,7 +124,7 @@ def checkCourse(browser, url):
             userWarnings.alertUser(
             "100% off in source but the check failed", 
             'Please check the CMD')
-            pdb.set_trace()
+            #pdb.set_trace()
             raise e
     return free
 
@@ -130,7 +142,7 @@ def buyCourses(urlList, userData):
             checkResult = checkCourse(browser, url) 
             if checkResult:
                 buyCourse(browser)
-                # logging.info(url)
+                logging.info(url)
                 coursesBought.append(url)           
     except Exception as e:
         raise e
